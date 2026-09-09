@@ -66,6 +66,6 @@ also works; the enquiry form shows a preview-only notice instead of submitting.)
 
 The enquiry form (an on-page section, `#partnership`) is wired for
 **Netlify Forms** (`data-netlify="true"`, hidden `form-name`, honeypot). Fields:
-name, email, company, role, team-size, message. On any other host, point the form
+name, email, company, role, message. On any other host, point the form
 at your own handler and keep `action="/thank-you.html"` (or update it). Form
 notifications must be configured on the host before the site goes live.

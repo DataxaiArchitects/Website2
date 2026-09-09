@@ -298,17 +298,18 @@
   if (year) year.textContent = String(new Date().getFullYear());
 
   /* ---------------------------------------------------------------
-     Local preview guard for the enquiry form.
-     Netlify handles the real submission after deployment; a local
-     preview (file:// or localhost) must not pretend to send an enquiry.
+     Enquiry form — submit to Netlify Forms via fetch (no page reload),
+     then send the visitor to the thank-you page. Falls back to a native
+     submit if fetch fails.
      --------------------------------------------------------------- */
   const form = $('form[name="corporate-enquiry"]');
   if (form) {
-    form.addEventListener("submit", event => {
-      const localPreview = location.protocol === "file:" ||
-        ["localhost", "127.0.0.1", "[::1]", ""].includes(location.hostname);
-      if (!localPreview) return;
-      event.preventDefault();
+    const submitBtn = $(".form-submit", form);
+    const successUrl = form.getAttribute("action") || "/thank-you.html";
+    const isLocal = location.protocol === "file:" ||
+      ["localhost", "127.0.0.1", "[::1]", ""].includes(location.hostname);
+
+    const setStatus = (msg, kind) => {
       let status = $(".form-status", form);
       if (!status) {
         status = document.createElement("p");
@@ -316,9 +317,39 @@
         status.setAttribute("role", "status");
         form.appendChild(status);
       }
-      status.textContent =
-        "Preview only. Deploy the source package to Netlify and configure form notifications before accepting enquiries.";
+      status.dataset.kind = kind || "info";
+      status.textContent = msg;
       status.scrollIntoView({ block: "nearest" });
+    };
+
+    form.addEventListener("submit", async event => {
+      if (!form.reportValidity()) { event.preventDefault(); return; }
+      event.preventDefault();
+
+      // Netlify Forms expects a urlencoded body that includes form-name.
+      const body = new URLSearchParams(new FormData(form)).toString();
+
+      if (isLocal) {
+        setStatus("Local preview — this enquiry submits to Netlify on the deployed site.", "info");
+        return;
+      }
+
+      const original = submitBtn ? submitBtn.innerHTML : "";
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Sending…"; }
+      setStatus("Sending your enquiry…", "info");
+
+      try {
+        const res = await fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        window.location.assign(successUrl);
+      } catch (err) {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = original; }
+        setStatus("Something went wrong sending your enquiry. Please try again, or email hello@dataxai.in.", "error");
+      }
     });
   }
 })();
