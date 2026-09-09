@@ -33,9 +33,8 @@ theme retained from [www.dataxai.in](https://www.dataxai.in).
 
 - **Global** — thin gradient scroll-progress bar; drifting aurora field.
 - **Hero** — word-by-word headline reveal, continuously flowing gradient on the
-  accent words, a slow "focus tour" on the visual that pans and zooms across
-  Discovery → Architecture Studio → AI Review on a loop with a synced caption
-  chip and progress dots, count-up proof stats (`6 / 5 / 100%`), animated scroll cue.
+  accent words, a floating + 3D pointer-tilt visual with a light scan sweep,
+  count-up proof stats (`6 / 5 / 100%`), animated scroll cue.
 - **Experience** — journey panel scales in; per-stage light-sweep on the image +
   slow ken-burns; ghost stage number; deliverable "chips" that stagger in; a
   smooth auto-advance timer on the progress rail (pauses on hover/focus, runs only

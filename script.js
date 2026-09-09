@@ -271,40 +271,24 @@
   }
 
   /* ---------------------------------------------------------------
-     Hero: focus tour — keep the caption + dots in step with the
-     CSS pan/zoom that holds on Discovery -> Architecture Studio -> AI Review
+     Hero: 3D tilt on the visual
      --------------------------------------------------------------- */
-  const heroFocus = $(".hero-focus");
-  const focusText = $("[data-focus-text]");
-  const focusDots = $$("[data-focus-dot]");
-  if (heroFocus && focusText && !prefersReducedMotion) {
-    const stops = ["Discovery", "Architecture Studio", "AI Review"];
-    // [loop fraction at which to flip, stop index] — flips happen mid-transition,
-    // matching the heroFocusTour keyframes (holds at 0-24 / 33-57 / 66-90%)
-    const flips = [[0, 0], [0.28, 1], [0.61, 2], [0.93, 0]];
-    let shown = -1;
-    const paint = i => {
-      if (i === shown) return;
-      shown = i;
-      focusText.textContent = stops[i];
-      focusDots.forEach((d, di) => d.classList.toggle("is-active", di === i));
-    };
-    const tick = () => {
-      const anim = heroFocus.getAnimations && heroFocus.getAnimations()[0];
-      let frac;
-      if (anim && anim.effect) {
-        const dur = anim.effect.getComputedTiming().duration || 21000;
-        frac = ((Number(anim.currentTime) || 0) % dur) / dur;
-      } else {
-        frac = (performance.now() / 21000) % 1;
+  const heroVisual = $("[data-tilt-visual]");
+  if (heroVisual && !prefersReducedMotion && window.matchMedia("(pointer: fine)").matches) {
+    const frame = $(".hero-visual-frame", heroVisual);
+    const heroEl = $(".hero");
+    heroEl.addEventListener("pointermove", e => {
+      const r = heroVisual.getBoundingClientRect();
+      const x = (e.clientX - (r.left + r.width / 2)) / r.width;
+      const y = (e.clientY - (r.top + r.height / 2)) / r.height;
+      if (frame) {
+        frame.style.setProperty("--ry", `${x * 6}deg`);
+        frame.style.setProperty("--rx", `${y * -6}deg`);
       }
-      let idx = 0;
-      for (const [at, i] of flips) if (frac >= at) idx = i;
-      paint(idx);
-      window.setTimeout(tick, 250);
-    };
-    paint(0);
-    tick();
+    });
+    heroEl.addEventListener("pointerleave", () => {
+      if (frame) { frame.style.setProperty("--ry", "0deg"); frame.style.setProperty("--rx", "0deg"); }
+    });
   }
 
   /* ---------------------------------------------------------------
